@@ -1,0 +1,189 @@
+body {
+    padding: 0;
+    margin: 0;
+}
+
+html,
+body,
+#map {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+#tableContainer {
+    position: absolute;
+    width: 100%;
+    height: 35%;
+    /* Initial height */
+    bottom: 0;
+    left: 0;
+    background-color: #f0f0ff;
+    z-index: 1000;
+    transition: height 0.3s ease-in-out;
+    /* Smooth transition */
+}
+
+#tableContainer.collapsed {
+    height: 0px;
+    /* Height when collapsed, only showing the tab */
+}
+
+#tableContainer::after {
+    content: '';
+    background-color: #ccc;
+    position: absolute;
+    top: 0;
+    height: 4px;
+    width: 100%;
+    cursor: ns-resize;
+    /* Vertical resize cursor */
+    overflow: scroll;
+}
+
+#table {
+    height: 100%;
+    overflow: auto;
+}
+
+.tab {
+    position: absolute;
+    top: -20px;
+    /* Position it above the container */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 20px;
+    background-color: #aaa;
+    color: white;
+    text-align: center;
+    line-height: 20px;
+    cursor: pointer;
+    border-radius: 8px 8px 0 0;
+    font-size: 14px;
+}
+
+.tg {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.tg td {
+    border-color: black;
+    border-style: solid;
+    border-width: 1px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    overflow: hidden;
+    padding: 10px 5px;
+    word-break: normal;
+}
+
+.tg th {
+    border-color: black;
+    border-style: solid;
+    border-width: 1px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    font-weight: normal;
+    overflow: hidden;
+    padding: 10px 5px;
+    word-break: normal;
+}
+
+.tg .tg-0pky {
+    text-align: left;
+    vertical-align: top
+}
+
+.tg .tg-0lax {
+    text-align: left;
+    vertical-align: top
+}
+
+thead {
+    position: sticky;
+    top: 0;
+    background: #ccc;
+    /* Ensure the header has a background */
+    z-index: 100;
+    /* Keeps it above other content */
+}
+
+.hidden-attribution {
+    display: none !important;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    width: 50%;
+    max-height: 80%;
+    overflow-y: auto;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.exit-btn {
+    display: block;
+    margin: 20px auto 0;
+    padding: 10px 20px;
+    font-size: 16px;
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.exit-btn:hover {
+    background: #cc0000;
+}
+
+#tableContainerSizer {
+    width: 20px;
+}
+
+.leaflet-right{
+    display: flex;
+}
+
+.leaflet-help{
+    order: 1;
+}
+
+.leaflet-settings {
+    order: 2;
+}
+
+.leaflet-control-layers {
+    order: 3;
+}
+
+.leaflet-touch .leaflet-control-layers, .leaflet-touch .leaflet-bar {
+    border: 0px solid rgba(0, 0, 0, 0.2) !important;
+    background-clip: padding-box;
+}
