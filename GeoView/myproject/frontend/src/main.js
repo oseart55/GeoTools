@@ -37,11 +37,11 @@ var map = L.map('map', {
         callback: centerMap
     }, '-', {
         text: 'Zoom in',
-        icon: 'https://raw.githubusercontent.com/oseart55/GeoTools/main/zoom-in.png',
+        icon: 'https://raw.githubusercontent.com/oseart55/GeoTools/main/Images/zoom-in.png',
         callback: zoomIn
     }, {
         text: 'Zoom out',
-        icon: 'https://raw.githubusercontent.com/oseart55/GeoTools/main/zoom-out.png',
+        icon: 'https://raw.githubusercontent.com/oseart55/GeoTools/main/Images/zoom-out.png',
         callback: zoomOut
     }]
 });
