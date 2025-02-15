@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -35,7 +33,7 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-
+	runtime.WindowMaximise(ctx)
 	// Load settings at startup
 	err := a.LoadSettings()
 	if err != nil {
@@ -139,7 +137,7 @@ func (a *App) LoadSettings() error {
 				return err
 			}
 
-			log.Println("Default settings file created:", settingsFile)
+			runtime.LogDebug(a.ctx, settingsFile)
 			return nil
 		}
 		return err
@@ -235,19 +233,19 @@ func (a *App) OnFileDrop(files []string) {
 	}
 
 	filePath := files[0] // Get the first dropped file
-	fmt.Println("File dropped:", filePath)
+	runtime.LogDebug(a.ctx, filePath)
 
 	// Read the GeoJSON file
 	data, err := os.ReadFile(filePath)
 	if err != nil {
-		fmt.Println("Error reading file:", err)
+		runtime.LogError(a.ctx, err.Error())
 		return
 	}
 
 	// Validate if the file is a GeoJSON
 	var geoJSON map[string]interface{}
 	if err := json.Unmarshal(data, &geoJSON); err != nil {
-		fmt.Println("Invalid GeoJSON file:", err)
+		runtime.LogError(a.ctx, err.Error())
 		return
 	}
 
@@ -256,21 +254,35 @@ func (a *App) OnFileDrop(files []string) {
 }
 
 func (a *App) OnGeoJSONFileDropped(optionalData ...interface{}) {
+	result, err := runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+		Type:          runtime.QuestionDialog,
+		Title:         "File Loader",
+		Message:       "Do you want to load the file?",
+		DefaultButton: "No",
+	})
+	if err != nil {
+		runtime.LogError(a.ctx, err.Error())
+	}
+	if result == "No" {
+		runtime.LogInfo(a.ctx, "Selected not to load Geojson")
+		return
+	}
+
 	if len(optionalData) == 0 {
-		fmt.Println("No data received")
+		runtime.LogInfo(a.ctx, "No data received")
 		return
 	}
 
 	payload, ok := optionalData[0].(map[string]interface{})
 	if !ok {
-		fmt.Println("Invalid data format")
+		runtime.LogInfo(a.ctx, "Invalid data format")
 		return
 	}
 
 	fileName := payload["fileName"].(string)
 	geojsonData := payload["data"].(string)
 
-	fmt.Println("Received file:", fileName)
+	runtime.LogDebug(a.ctx, fileName)
 
 	// Emit the data and filename to frontend
 	runtime.EventsEmit(a.ctx, "geojson-loaded", map[string]string{

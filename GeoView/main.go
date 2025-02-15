@@ -40,7 +40,7 @@ func main() {
 		Bind: []interface{}{
 			app,
 		},
-		LogLevel: logger.ERROR,
+		LogLevel: logger.DEBUG,
 		DragAndDrop: &options.DragAndDrop{
 			EnableFileDrop:     true,
 			DisableWebViewDrop: true,

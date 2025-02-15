@@ -282,6 +282,7 @@ L.Control.CustomSearch = L.Control.extend({
             let selectedMarkers = []
             layers.forEach(layer => {
                 layer.eachLayer(sublayer => {
+                    map.addLayer(sublayer)
                     if (!sublayer.data) {
                         return
                     }
