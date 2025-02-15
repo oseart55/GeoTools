@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -38,24 +39,25 @@ func (a *App) startup(ctx context.Context) {
 	// Load settings at startup
 	err := a.LoadSettings()
 	if err != nil {
-		runtime.LogError(a.ctx, err.Error())
+		runtime.LogError(ctx, err.Error())
 	}
 
 	runtime.EventsOn(ctx, "saveSettings", func(data ...interface{}) {
-		runtime.LogDebugf(a.ctx, "Received event from frontend: %v", data)
+		runtime.LogDebugf(ctx, "Received event from frontend: %v", data)
 		if len(data) > 0 {
 			settingsJSON, ok := data[0].(string)
 			if !ok {
-				runtime.LogError(a.ctx, "Invalid settings format received")
+				runtime.LogError(ctx, "Invalid settings format received")
 				return
 			}
 
-			runtime.LogDebugf(a.ctx, "Received event from frontend: %v", settingsJSON)
+			runtime.LogDebugf(ctx, "Received event from frontend: %v", settingsJSON)
 
 			// Save the settings to file
 			a.SaveSettings(settingsJSON)
 		}
 	})
+	runtime.EventsOn(ctx, "geojson-file-dropped", a.OnGeoJSONFileDropped)
 }
 
 // GetSettingsFilePath returns the full path to the settings.json file
@@ -116,7 +118,28 @@ func (a *App) LoadSettings() error {
 	data, err := os.ReadFile(settingsFile)
 	if err != nil {
 		if os.IsNotExist(err) {
-			// No settings file exists yet, return without error
+			// No settings file exists yet, create it with default settings
+			defaultSettings := Settings{
+				User: struct {
+					DisplayHelp     bool `json:"displayHelp"`
+					DisplaySettings bool `json:"displaySettings"`
+				}{
+					DisplayHelp:     true,
+					DisplaySettings: true,
+				},
+			}
+
+			defaultData, err := json.MarshalIndent(defaultSettings, "", "  ")
+			if err != nil {
+				return err
+			}
+
+			err = os.WriteFile(settingsFile, defaultData, 0644)
+			if err != nil {
+				return err
+			}
+
+			log.Println("Default settings file created:", settingsFile)
 			return nil
 		}
 		return err
@@ -164,7 +187,6 @@ func (a *App) GetDisplayVisibility() bool {
 	file, err := os.Open(settingsFile)
 	if err != nil {
 		runtime.LogError(a.ctx, err.Error())
-		log.Println("Error opening settings file:", err)
 		return true
 	}
 	defer file.Close()
@@ -205,4 +227,54 @@ func (a *App) GetSettingsVisibility() bool {
 
 	// Return the DisplayHelp value
 	return settings.User.DisplaySettings
+}
+
+func (a *App) OnFileDrop(files []string) {
+	if len(files) == 0 {
+		return
+	}
+
+	filePath := files[0] // Get the first dropped file
+	fmt.Println("File dropped:", filePath)
+
+	// Read the GeoJSON file
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		fmt.Println("Error reading file:", err)
+		return
+	}
+
+	// Validate if the file is a GeoJSON
+	var geoJSON map[string]interface{}
+	if err := json.Unmarshal(data, &geoJSON); err != nil {
+		fmt.Println("Invalid GeoJSON file:", err)
+		return
+	}
+
+	// Send GeoJSON data to the frontend
+	runtime.EventsEmit(a.ctx, "geojson-fileDrop", string(data))
+}
+
+func (a *App) OnGeoJSONFileDropped(optionalData ...interface{}) {
+	if len(optionalData) == 0 {
+		fmt.Println("No data received")
+		return
+	}
+
+	payload, ok := optionalData[0].(map[string]interface{})
+	if !ok {
+		fmt.Println("Invalid data format")
+		return
+	}
+
+	fileName := payload["fileName"].(string)
+	geojsonData := payload["data"].(string)
+
+	fmt.Println("Received file:", fileName)
+
+	// Emit the data and filename to frontend
+	runtime.EventsEmit(a.ctx, "geojson-loaded", map[string]string{
+		"fileName": fileName,
+		"data":     geojsonData,
+	})
 }

@@ -18,6 +18,14 @@ export function LoadSettings() {
   return window['go']['main']['App']['LoadSettings']();
 }
 
+export function OnFileDrop(arg1) {
+  return window['go']['main']['App']['OnFileDrop'](arg1);
+}
+
+export function OnGeoJSONFileDropped(arg1) {
+  return window['go']['main']['App']['OnGeoJSONFileDropped'](arg1);
+}
+
 export function SaveSettings(arg1) {
   return window['go']['main']['App']['SaveSettings'](arg1);
 }

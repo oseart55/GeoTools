@@ -138,5 +138,6 @@ function pointInPolygon(point, polygonLatLngs) {
 }
 
 export {
-    GetAssets
+    GetAssets,
+    DisplayAssetsInTable
 }

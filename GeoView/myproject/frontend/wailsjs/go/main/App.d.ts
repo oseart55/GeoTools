@@ -9,4 +9,8 @@ export function GetSettingsVisibility():Promise<boolean>;
 
 export function LoadSettings():Promise<void>;
 
+export function OnFileDrop(arg1:Array<string>):Promise<void>;
+
+export function OnGeoJSONFileDropped(arg1:Array<any>):Promise<void>;
+
 export function SaveSettings(arg1:string):Promise<void>;

@@ -15,7 +15,18 @@ func createMenu(app *App) *menu.Menu {
 	// FileMenu.AddText("&Open", keys.CmdOrCtrl("o"), openFile)
 	FileMenu.AddSeparator()
 	FileMenu.AddText("Quit", keys.CmdOrCtrl("q"), func(_ *menu.CallbackData) {
-		runtime.Quit(app.ctx)
+		result, err := runtime.MessageDialog(app.ctx, runtime.MessageDialogOptions{
+			Type:          runtime.QuestionDialog,
+			Title:         "Quit Client",
+			Message:       "Do you want to Quit?",
+			DefaultButton: "No",
+		})
+		if err != nil {
+			log.Panic(err)
+		}
+		if result == "Yes" {
+			runtime.Quit(app.ctx)
+		}
 	})
 	FileMenu.AddText("Restart", keys.CmdOrCtrl("r"), func(_ *menu.CallbackData) {
 		result, err := runtime.MessageDialog(app.ctx, runtime.MessageDialogOptions{
