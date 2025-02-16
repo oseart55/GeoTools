@@ -20,9 +20,11 @@ var assets embed.FS
 const SPI_GETWORKAREA = 0x0030
 
 func main() {
+	logMessage("Application is starting...")
 	width, height := getWorkAreaSize()
 	// Create an instance of the app structure
 	app := NewApp()
+	defer app.Shutdown()
 	// Create application with options
 	err := wails.Run(&options.App{
 		Title:  "GeoView",
@@ -47,10 +49,14 @@ func main() {
 			CSSDropProperty:    "--wails-drop-target",
 			CSSDropValue:       "drop",
 		},
+		Debug: options.Debug{
+			OpenInspectorOnStartup: true,
+		},
 	})
 
 	if err != nil {
 		println("Error:", err.Error())
+		logMessage(err.Error())
 	}
 }
 

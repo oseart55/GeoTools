@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+
+<!--#1 link to your sources -->
+
+<html>
+<script type="module" crossorigin src="/assets/index.2b083cd2.js"></script>
+<link rel="stylesheet" href="/assets/index.6624a503.css">
+
+<!-- <script type="module" crossorigin src="/assets/index.f4d03584.js"></script> -->
+<!-- <link rel="stylesheet" href="/assets/index.5a710b5e.css"> -->
+
+
+<!-- Leaflet.js -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Leaflet.js EasyButton -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
+<script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<!-- Leaflet.js Draw -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw-src.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<!-- Leaflet.js Context Menu -->
+<link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-contextmenu/1.4.0/leaflet.contextmenu.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-contextmenu/1.4.0/leaflet.contextmenu.min.js"></script>
+<!-- Jquery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+
+<!-- #3 adding a div container for your map -->
+<div id="tableContainer" class="collapsed">
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeModal">&times;</span>
+            <h2>Help Information</h2>
+            <p>
+                This is some helpful text. You can scroll through this modal if the content is long.
+                This modal takes focus and prevents interaction with the background while open.
+            </p>
+            <p>
+                Press <b>Escape</b> to close or click the Exit button.
+            </p>
+            <button class="exit-btn" id="exitModal">Exit</button>
+        </div>
+    </div>
+    <div id="settings" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeModal">&times;</span>
+            <h2>Settings</h2>
+            <p>
+                <label>
+                    <input type="checkbox" checked> Display Help Box
+                </label>
+            </p>
+            <p>
+                <label>
+                    Table Height: <input type="text" id="tableContainerSizer" value="35"> % 
+                </label>
+            </p>
+            <p>
+                Press <b>Escape</b> to close or click the Exit button.
+            </p>
+            <button class="exit-btn" id="exitModal">Exit</button>
+        </div>
+    </div>
+    <div id="table">
+        <table class="tg" id="myTable">
+            <thead>
+                <tr>
+                    <td class="tg-0pky">Asset ID</td>
+                    <td class="tg-0lax">Asset Name</td>
+                    <td class="tg-0lax">Location</td>
+                    <td class="tg-0lax">Details</td>
+                </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+    </div>
+</div>
+<div id="map"></div>
+
+</html>

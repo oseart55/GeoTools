@@ -9,7 +9,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-const appName = "GeoView.exe"
+const appName = "GeoView-windows-amd64.exe"
 const settingsFile = "settings.json"
 
 // App struct
@@ -21,6 +21,7 @@ type Settings struct {
 	User struct {
 		DisplayHelp     bool `json:"displayHelp"`
 		DisplaySettings bool `json:"displaySettings"`
+		AutoUpdate      bool `json:"autoUpdate"`
 	} `json:"user"`
 }
 
@@ -34,10 +35,18 @@ func NewApp() *App {
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	runtime.WindowMaximise(ctx)
+	runtime.WindowSetTitle(ctx, "GeoView - "+version)
+	updateErr := a.DownloadAndLaunchUpdater()
+	if updateErr != nil {
+		runtime.LogError(ctx, updateErr.Error())
+		logMessage(updateErr.Error())
+	}
+
 	// Load settings at startup
 	err := a.LoadSettings()
 	if err != nil {
 		runtime.LogError(ctx, err.Error())
+		logMessage(err.Error())
 	}
 
 	runtime.EventsOn(ctx, "saveSettings", func(data ...interface{}) {
@@ -46,6 +55,7 @@ func (a *App) startup(ctx context.Context) {
 			settingsJSON, ok := data[0].(string)
 			if !ok {
 				runtime.LogError(ctx, "Invalid settings format received")
+				logMessage("Invalid settings format received")
 				return
 			}
 
@@ -62,11 +72,13 @@ func (a *App) startup(ctx context.Context) {
 func GetSettingsFilePath() (string, error) {
 	configDir, err := os.UserConfigDir() // Gets %APPDATA% on Windows
 	if err != nil {
+		logMessage(err.Error())
 		return "", err
 	}
 	appDir := filepath.Join(configDir, appName) // Application folder
 	err = os.MkdirAll(appDir, os.ModePerm)      // Ensure directory exists
 	if err != nil {
+		logMessage(err.Error())
 		return "", err
 	}
 	return filepath.Join(appDir, settingsFile), nil
@@ -77,6 +89,7 @@ func (a *App) SaveSettings(jsonData string) {
 	var settings Settings
 	err := json.Unmarshal([]byte(jsonData), &settings)
 	if err != nil {
+		logMessage(err.Error())
 		runtime.LogError(a.ctx, err.Error())
 		return
 	}
@@ -84,6 +97,7 @@ func (a *App) SaveSettings(jsonData string) {
 	// Get settings file path
 	settingsFile, err := GetSettingsFilePath()
 	if err != nil {
+		logMessage(err.Error())
 		runtime.LogError(a.ctx, err.Error())
 		return
 	}
@@ -91,6 +105,7 @@ func (a *App) SaveSettings(jsonData string) {
 	// Save settings to file
 	file, err := os.Create(settingsFile)
 	if err != nil {
+		logMessage(err.Error())
 		runtime.LogError(a.ctx, err.Error())
 		return
 	}
@@ -100,6 +115,7 @@ func (a *App) SaveSettings(jsonData string) {
 	encoder.SetIndent("", "  ") // Pretty print JSON
 	err = encoder.Encode(settings)
 	if err != nil {
+		logMessage(err.Error())
 		runtime.LogError(a.ctx, err.Error())
 	} else {
 		runtime.LogDebug(a.ctx, "Settings Saved")
@@ -110,30 +126,36 @@ func (a *App) SaveSettings(jsonData string) {
 func (a *App) LoadSettings() error {
 	settingsFile, err := GetSettingsFilePath()
 	if err != nil {
+		logMessage(err.Error())
 		return err
 	}
 
 	data, err := os.ReadFile(settingsFile)
 	if err != nil {
+		logMessage(err.Error())
 		if os.IsNotExist(err) {
 			// No settings file exists yet, create it with default settings
 			defaultSettings := Settings{
 				User: struct {
 					DisplayHelp     bool `json:"displayHelp"`
 					DisplaySettings bool `json:"displaySettings"`
+					AutoUpdate      bool `json:"autoUpdate"`
 				}{
 					DisplayHelp:     true,
 					DisplaySettings: true,
+					AutoUpdate:      false,
 				},
 			}
 
 			defaultData, err := json.MarshalIndent(defaultSettings, "", "  ")
 			if err != nil {
+				logMessage(err.Error())
 				return err
 			}
 
 			err = os.WriteFile(settingsFile, defaultData, 0644)
 			if err != nil {
+				logMessage(err.Error())
 				return err
 			}
 
@@ -146,6 +168,7 @@ func (a *App) LoadSettings() error {
 	var settings Settings
 	err = json.Unmarshal(data, &settings)
 	if err != nil {
+		logMessage(err.Error())
 		return err
 	}
 	runtime.LogDebugf(a.ctx, "Settings Saved: %v", settings)
@@ -156,17 +179,20 @@ func (a *App) LoadSettings() error {
 func (a *App) GetSettings() string {
 	settingsFile, err := GetSettingsFilePath()
 	if err != nil {
+		logMessage(err.Error())
 		runtime.LogError(a.ctx, err.Error())
 		return "{}" // Return empty JSON on error
 	}
 
 	data, err := os.ReadFile(settingsFile)
 	if err != nil {
+		logMessage(err.Error())
 		runtime.LogError(a.ctx, err.Error())
 		return "{}" // Return empty JSON if file is missing
 	}
 	settingsJSON, err := json.Marshal(data)
 	if err != nil {
+		logMessage(err.Error())
 		runtime.LogError(a.ctx, err.Error())
 	}
 
@@ -179,11 +205,13 @@ func (a *App) GetDisplayVisibility() bool {
 	// Open the settings.json file
 	settingsFile, err := GetSettingsFilePath()
 	if err != nil {
+		logMessage(err.Error())
 		runtime.LogError(a.ctx, err.Error())
 		return true
 	}
 	file, err := os.Open(settingsFile)
 	if err != nil {
+		logMessage(err.Error())
 		runtime.LogError(a.ctx, err.Error())
 		return true
 	}
@@ -193,6 +221,7 @@ func (a *App) GetDisplayVisibility() bool {
 	var settings Settings
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&settings); err != nil {
+		logMessage(err.Error())
 		runtime.LogError(a.ctx, err.Error())
 		return true
 	}
@@ -205,11 +234,13 @@ func (a *App) GetSettingsVisibility() bool {
 	// Open the settings.json file
 	settingsFile, err := GetSettingsFilePath()
 	if err != nil {
+		logMessage(err.Error())
 		runtime.LogError(a.ctx, err.Error())
 		return true
 	}
 	file, err := os.Open(settingsFile)
 	if err != nil {
+		logMessage(err.Error())
 		runtime.LogError(a.ctx, err.Error())
 		return true
 	}
@@ -219,12 +250,42 @@ func (a *App) GetSettingsVisibility() bool {
 	var settings Settings
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&settings); err != nil {
+		logMessage(err.Error())
 		runtime.LogError(a.ctx, err.Error())
 		return true
 	}
 
 	// Return the DisplayHelp value
 	return settings.User.DisplaySettings
+}
+
+func (a *App) GetSettingsAutoUpdate() bool {
+	// Open the settings.json file
+	settingsFile, err := GetSettingsFilePath()
+	if err != nil {
+		logMessage(err.Error())
+		runtime.LogError(a.ctx, err.Error())
+		return true
+	}
+	file, err := os.Open(settingsFile)
+	if err != nil {
+		logMessage(err.Error())
+		runtime.LogError(a.ctx, err.Error())
+		return true
+	}
+	defer file.Close()
+
+	// Decode JSON file into Settings struct
+	var settings Settings
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&settings); err != nil {
+		logMessage(err.Error())
+		runtime.LogError(a.ctx, err.Error())
+		return true
+	}
+
+	// Return the DisplayHelp value
+	return settings.User.AutoUpdate
 }
 
 func (a *App) OnFileDrop(files []string) {
@@ -238,6 +299,7 @@ func (a *App) OnFileDrop(files []string) {
 	// Read the GeoJSON file
 	data, err := os.ReadFile(filePath)
 	if err != nil {
+		logMessage(err.Error())
 		runtime.LogError(a.ctx, err.Error())
 		return
 	}
@@ -245,6 +307,7 @@ func (a *App) OnFileDrop(files []string) {
 	// Validate if the file is a GeoJSON
 	var geoJSON map[string]interface{}
 	if err := json.Unmarshal(data, &geoJSON); err != nil {
+		logMessage(err.Error())
 		runtime.LogError(a.ctx, err.Error())
 		return
 	}
@@ -261,6 +324,7 @@ func (a *App) OnGeoJSONFileDropped(optionalData ...interface{}) {
 		DefaultButton: "No",
 	})
 	if err != nil {
+		logMessage(err.Error())
 		runtime.LogError(a.ctx, err.Error())
 	}
 	if result == "No" {
@@ -275,6 +339,7 @@ func (a *App) OnGeoJSONFileDropped(optionalData ...interface{}) {
 
 	payload, ok := optionalData[0].(map[string]interface{})
 	if !ok {
+		logMessage("Invalid Data Format when loading geojson")
 		runtime.LogInfo(a.ctx, "Invalid data format")
 		return
 	}
@@ -289,4 +354,9 @@ func (a *App) OnGeoJSONFileDropped(optionalData ...interface{}) {
 		"fileName": fileName,
 		"data":     geojsonData,
 	})
+}
+
+func (a *App) Shutdown() {
+	logMessage("Application is shutting down...")
+	CloseLogFile()
 }

@@ -1,9 +1,9 @@
 import './style.css';
-import { editableLayers } from './dist/drawUtil.js'
 import './dist/tableUtil.js'
-import { SearchButton, SearchControl, HelpButton, SettingsButton } from './dist/controlUltil.js';
+import { editableLayers } from './dist/drawUtil.js'
 import { AddMapDrawEvent } from './dist/eventsUtil.js';
 import { displayGeoJSON } from './dist/loadFilesUtil.js';
+import { SearchButton, SearchControl, HelpButton, SettingsButton } from './dist/controlUltil.js';
 
 document.addEventListener("dragover", (event) => {
     event.preventDefault(); // Prevents file from being opened in a new window
@@ -115,6 +115,11 @@ window.runtime.EventsOn("toggleSettingsButton", (isVisible) => {
     isVisible == true ? map.addControl(SettingsButton) : map.removeControl(SettingsButton);
     changeDisplaySetting("displaySettings", isVisible)
     window.runtime.EventsEmit("toggleSettingsButton");
+});
+
+window.runtime.EventsOn("toggleAutoUpdateButton", (isVisible) => {
+    changeDisplaySetting("autoUpdate", isVisible)
+    window.runtime.EventsEmit("toggleAutoUpdateButton");
 });
 
 window.runtime.EventsOn("Reload", () => {

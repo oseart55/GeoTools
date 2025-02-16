@@ -22,6 +22,7 @@ func createMenu(app *App) *menu.Menu {
 			DefaultButton: "No",
 		})
 		if err != nil {
+			logMessage(err.Error())
 			log.Panic(err)
 		}
 		if result == "Yes" {
@@ -36,6 +37,7 @@ func createMenu(app *App) *menu.Menu {
 			DefaultButton: "No",
 		})
 		if err != nil {
+			logMessage(err.Error())
 			log.Panic(err)
 		}
 		if result == "Yes" {
@@ -54,6 +56,7 @@ func createMenu(app *App) *menu.Menu {
 			},
 		})
 		if err != nil {
+			logMessage(err.Error())
 			log.Panic(err)
 		}
 		if file == "" {
@@ -61,6 +64,7 @@ func createMenu(app *App) *menu.Menu {
 		}
 		data, err := os.ReadFile(file)
 		if err != nil {
+			logMessage(err.Error())
 			log.Panic(err)
 		}
 		geoJSON := string(data)
@@ -75,6 +79,10 @@ func createMenu(app *App) *menu.Menu {
 	preferencesMenu.AddCheckbox("Show Settings Button", app.GetSettingsVisibility(), keys.CmdOrCtrl("s"), func(c *menu.CallbackData) {
 		// Emit an event to the frontend to toggle help button visibility
 		runtime.EventsEmit(app.ctx, "toggleSettingsButton", c.MenuItem.Checked)
+	})
+	preferencesMenu.AddCheckbox("Apply Updates Automatically", app.GetSettingsAutoUpdate(), keys.CmdOrCtrl("u"), func(c *menu.CallbackData) {
+		// Emit an event to the frontend to toggle help button visibility
+		runtime.EventsEmit(app.ctx, "toggleAutoUpdateButton", c.MenuItem.Checked)
 	})
 	return AppMenu
 }
